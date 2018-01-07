@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://netflix.github.io/falcor/build/falcor.browser.js"></script>
+    <script src="https://lodash.com/vendor/cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"></script>
+
+    <script>
+        const model = new falcor.Model({source: new falcor.HttpDataSource('/model.json')}).batch();
+
+        const clickFilm = async function (n) {
+            let characterLength = (await model.get('films[' + n + '].characters.length')).json.films[n].characters.length;
+            let filmTitle = (await model.get('films[' + n + '].title')).json.films[n].title;
+            let characters = (await model.get('films[' + n + ']characters[0..' + characterLength + '].name')).json.films[n].characters;
+            document.write("<table align='left' display='block' id='chars' border=1><tr><td><b>" + filmTitle + " Characters</b></td></tr>");
+            _.values(characters).forEach(character => {
+                document.write("<tr><td>" + character.name + "</td></tr>");
+            });
+            document.write("</table>");
+        };
+
+        const render = async function () {
+            let length = (await model.get('films.length')).json.films.length;
+            let filmTitles = (await model.get('films[0..' + length + '].title')).json.films;
+            let filmIds = (await model.get('films[0..' + length + '].id')).json.films;
+            let producer = (await model.get('films[0..' + length + '].producer')).json.films;
+            document.write("<table id='films' border=1><tr><td><b>ID</b></td><td><b>Title</b></td><td><b>Producer(s)</b></td></tr>");
+            _.values(filmTitles).forEach(function (film, n) {
+                document.write("<tr>");
+                document.write("<td>" + filmIds[n].id + "</td>");
+                document.write("<td><a href='#' onclick='clickFilm(" + n + ")'>" + film.title + "</a></td>");
+                document.write("<td>" + producer[n].producer + "</td>");
+                document.write("</tr>");
+            });
+            document.write("</table>");
+        };
+        render();
+    </script>
+<body>
+</body>
+</html>
